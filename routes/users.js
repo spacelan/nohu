@@ -19,7 +19,10 @@ module.exports = function(server) {
         return next();
       }
       
-      res.send({token: auth.generateToken(user)});
+      res.send({
+        token: auth.generateToken(user),
+        expire_in: 10080
+      });
     });
   });
 
@@ -49,10 +52,20 @@ module.exports = function(server) {
         if(err)
           return next(err);
 
-        res.send({token: auth.generateToken(newUser)});
+        res.send({
+          token: auth.generateToken(user),
+          expire_in: 10080
+        });
       });
     });
   });
+
+  server.get('/token', auth.authorization, function(req, res, next) {
+    res.send({
+      token: auth.generateToken(req.user),
+      expire_in: 10080
+    });
+  })
 
   server.get('/users', auth.authorization, function(req, res, next) {
     User.find(function(err, users) {

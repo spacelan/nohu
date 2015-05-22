@@ -36,6 +36,6 @@ module.exports.authorization = function(req, res, next) {
 
 module.exports.generateToken = function(user) {
   return jwt.sign({id: user.id, password: user.password}, secret, {
-    expiresInMinutes: 5
+    expiresInMinutes: 10080
   });  
 };

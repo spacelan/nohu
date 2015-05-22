@@ -8,7 +8,8 @@ var key = fs.readFileSync('cert/privatekey.pem', 'utf8');
 
 var server = restify.createServer({
   certificate: certificate,
-  key: key
+  key: key,
+  name: 'Nohu'
 });
 server.use(logger('dev'));
 server.use(restify.dateParser());
@@ -23,6 +24,6 @@ server.get('/', function(req, res, next) {
   return next();
 });
 
-server.listen(3000, function() {
+server.listen(443, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
