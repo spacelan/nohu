@@ -17,6 +17,6 @@
     "morgan": "^1.5.3",
     "restify": "^3.0.3",
     "shortid": "^2.2.2",
-    "validator": "^3.40.0",
+    "validator": "^3.40.0"
   }
 }
