@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./tests/routes-users-test.js",
+    "start": "node ./index.js"
   },
   "author": "",
   "license": "ISC",
@@ -18,5 +19,11 @@
     "restify": "^3.0.3",
     "shortid": "^2.2.2",
     "validator": "^3.40.0"
+  },
+  "devDependencies": {
+    "eventproxy": "^0.3.3",
+    "mocha": "^2.2.5",
+    "should": "^6.0.3",
+    "supertest": "^1.0.1"
   }
 }

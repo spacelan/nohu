@@ -1,7 +1,7 @@
 var restify = require('restify');
 var User = require('../models').User;
 var jwt = require('jsonwebtoken');
-var secret = 'who am i';
+var secret = require('../config.js').tokenSecret;
 
 module.exports.authorization = function(req, res, next) {
   var token = req.header('Authorization', null);
@@ -15,11 +15,13 @@ module.exports.authorization = function(req, res, next) {
     User.findOne({id: decoded.id}, function(err, user) {
       next.ifError(err);
 
+      var errMsg;
       if(!user)
-        return next(new restify.InvalidCredentialsError('invalid id'));
-
-      if(user.password !== decoded.password)
-        return next(new restify.InvalidCredentialsError('expired password'));
+        errMsg = 'invalid id';
+      else if(user.password !== decoded.password)
+        errMsg = 'expired password';
+      if(errMsg)
+        return next(new restify.InvalidCredentialsError(errMsg));
 
       req.user = user;
       return next();

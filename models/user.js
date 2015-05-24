@@ -13,13 +13,12 @@ var UserSchema = new Schema({
   display_name: String,
   avater_url: String,
   create_date: {type: Date, default: Date.now},
-  introduction: String
+  introduction: String,
+  user_type: {type: String, default: 'Incomplete'}
 });
 
-var salt = bcrypt.genSaltSync();
-
 UserSchema.methods.hashPassword = function(password) {
-  return bcrypt.hashSync(password, salt);
+  return bcrypt.hashSync(password, bcrypt.genSaltSync());
 };
 
 UserSchema.methods.validPassword = function(password) {
