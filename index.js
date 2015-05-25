@@ -13,7 +13,7 @@ var server = restify.createServer({
 });
 //server.use(logger('dev'));
 server.use(restify.dateParser());
-server.use(restify.queryParser());
+server.use(restify.queryParser({mapParams: false}));
 server.use(restify.gzipResponse());
 server.use(restify.bodyParser());
 server.use(restify.requestLogger());

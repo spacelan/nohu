@@ -4,16 +4,17 @@ var bcrypt = require('bcrypt-nodejs');
 var shortid = require('shortid');
 
 var UserSchema = new Schema({
-  id: {type: String, default: shortid.generate},
-  password: String,
-  email: String,
-  phone: String,
-  gender: String,
-  age: Number,
-  display_name: String,
-  avater_url: String,
+  id: {type: String, default: shortid.generate, unique: true},
+  password: {type: String, default: '123456', required: true},
+  email: {type: String, default: ''},
+  phone: {type: String, unique: true, required: true},
+  gender: {type: String, default: ''},
+  age: {type: Number, default: 20},
+  display_name: {type: String, default: ''},
+  avater_url: {type: String, default: ''},
   create_date: {type: Date, default: Date.now},
-  introduction: String,
+  update_date: {type: Date, default: Date.now},
+  introduction: {type: String, default: ''},
   user_type: {type: String, default: 'Incomplete'}
 });
 

@@ -2,19 +2,40 @@ var server = require('../index.js');
 var supertest = require('supertest');
 var should = require('should');
 var eventproxy = require('eventproxy');
+var User = require('../models').User;
 
 var request = supertest(server);
 
-describe('tests/routes-users-test.js', function() {
+describe('routes.users.test.js', function() {
   var token;
+
   before(function(done) {
-    var User = require('../models').User;
-    User.remove({phone: '18000000000'}, done);
+    User.remove({}, done);
+  })
+
+  beforeEach(function(done) {
+    var user = new User();
+    user.phone = '18080808080';
+    user.password = user.hashPassword('1234567890');
+    user.display_name = 'display_name';
+    user.introduction = 'introduction';
+    user.save(function(err) {
+      if(err) done(err);
+      request.post('/login')
+      .send({
+        phone: '18080808080',
+        password: '1234567890'
+      })
+      .expect(200, function(err, res) {
+        res.text.should.containEql('token');
+        token = JSON.parse(res.text).token;
+        done(err);
+      });
+    });
   });
 
-  after(function(done) {
-    var User = require('../models').User;
-    User.remove({phone: '18000000000'}, done);
+  afterEach(function(done) {
+    User.remove({}, done);
   });
 
   describe('/', function() {
@@ -79,8 +100,8 @@ describe('tests/routes-users-test.js', function() {
     it('should return 422 then post with registed phone and password', function(done) {
       request.post('/signup')
       .send({
-        phone: '18000000000',
-        password: '100000'
+        phone: '18080808080',
+        password: '1234567890'
       })
       .expect(422, function(err, res) {
         res.text.should.containEql('registed');
@@ -124,8 +145,8 @@ describe('tests/routes-users-test.js', function() {
     it('should return 200 when post with registed phone and password', function(done) {
       request.post('/login')
       .send({
-        phone: '18000000000',
-        password: '100000'
+        phone: '18080808080',
+        password: '1234567890'
       })
       .expect(200, function(err, res) {
         res.text.should.containEql('token');
@@ -151,7 +172,7 @@ describe('tests/routes-users-test.js', function() {
 
       request.post('/login')
       .send({
-        phone: '18000000000',
+        phone: '18080808080',
         password: '10000000'
       })
       .expect(422, ep.done('password', function(res) {
@@ -215,7 +236,7 @@ describe('tests/routes-users-test.js', function() {
       request.post('/password')
       .set('Authorization', token)
       .send({
-        password: '100000',
+        password: '1234567890',
         newPassword: '666666'
       })
       .expect(201, function(err, res) {
@@ -245,7 +266,7 @@ describe('tests/routes-users-test.js', function() {
       request.post('/password')
       .set('Authorization', token)
       .send({
-        password: '666666',
+        password: '1234567890',
         newPassword: '100000'
       })
       .expect(201, function(err, res) {
@@ -281,12 +302,13 @@ describe('tests/routes-users-test.js', function() {
       });
     });
 
-    it('should return 201 when put with valid data', function(done) {
+    it('should return 201 when put with valid data and invalid data but the invalid will not be saved in db', function(done) {
       request.put('/users/me')
       .set('Authorization', token)
       .send({
         age: 20,
         introduction: 'i am in',
+        display_name: 'lan',
         fakeData: 'hehe'
       })
       .expect(201, function(err, res) {
@@ -294,6 +316,21 @@ describe('tests/routes-users-test.js', function() {
         should(json).have.property('age', 20);
         should(json).have.property('introduction', 'i am in');
         should(json).not.have.property('fakeData');
+        done(err);
+      });
+    });
+
+    it('should return 201 when put with empty display_name and on introduction', function(done) {
+      request.put('/users/me')
+      .set('Authorization', token)
+      .send({
+        display_name: '',
+        age: 20
+      })
+      .expect(201, function(err, res) {
+        var json = JSON.parse(res.text);
+        should(json).have.property('display_name', '');
+        should(json).have.property('introduction', 'introduction');
         done(err);
       });
     });

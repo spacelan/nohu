@@ -48,22 +48,19 @@ module.exports = function(server) {
     if(errMsg)
       return next(new restify.UnprocessableEntityError(errMsg));
 
-    User.findOne({phone: phone}, function(err, user) {
-      next.ifError(err);
+    var newUser = new User();
+    newUser.phone = phone;
+    newUser.password = newUser.hashPassword(password);
 
-      if(user)
-        return next(new restify.UnprocessableEntityError('registed mobile phone'));
-
-      var newUser = new User();
-      newUser.phone = phone;
-      newUser.password = newUser.hashPassword(password);
-
-      newUser.save(function(err) {
-        next.ifError(err);
-
-        res.send(201, auth.generateToken(newUser));
-        return next();
-      });
+    newUser.save(function(err) {
+      if(err) {
+        if(err.message.indexOf('duplicate key') !== -1)
+          return next(new restify.UnprocessableEntityError('registed mobile phone'));
+        else
+          return next(err);
+      }
+      res.send(201, auth.generateToken(newUser));
+      return next();
     });
   });
 
@@ -88,6 +85,7 @@ module.exports = function(server) {
       return next(new restify.UnprocessableEntityError(errMsg));
 
     user.password = user.hashPassword(newPassword);
+    user.update_date = Date.now();
     user.save(function(err) {
       next.ifError(err);
 
@@ -138,13 +136,13 @@ module.exports = function(server) {
       profile.email = params.email;
     if(validator.isURL(params.avater_url) || params.avater_url == '')
       profile.avater_url = params.avater_url;
-    if(_.inRange(params.age, 0, 200))
+    if(params.age >= 0 && params.age <= 200)
       profile.age = params.age;
     if(params.gender == 'male' || params.gender == 'female' || params.gender == '')
       profile.gender = params.gender;
-    if(validator.isLength(params.introduction, 0, 800) && params.introduction)
+    if(validator.isLength(params.introduction, 1, 800) || params.introduction == '')
       profile.introduction = params.introduction;
-    if(validator.isLength(params.display_name, 0, 20) && params.display_name)
+    if(validator.isLength(params.display_name, 1, 20) || params.display_name == '')
       profile.display_name = params.display_name;
     req.log.debug(profile);
 
@@ -161,6 +159,7 @@ module.exports = function(server) {
     req.log.debug(params);*/
 
     _.assign(user, profile);
+    user.update_date = Date.now();
     user.save(function(err) {
       next.ifError(err);
 
